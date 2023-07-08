@@ -17,7 +17,7 @@ const isValid = (username)=>{                     //returns boolean
     }
 }
 
-const authenticatedUser = (username,password)=>{ //returns boolean
+const authenticatedUser = (username,password) => { //returns boolean
     let validusers = users.filter((user) => {
         return (user.username === username && user.password === password)
     });
@@ -30,10 +30,11 @@ const authenticatedUser = (username,password)=>{ //returns boolean
     }
 }
 
+
 //only registered users can login
-regd_users.post("/login", (req,res) => {
-    const username = req.params.username;
-    const password = req.params.password;
+regd_users.post("/login", (req, res) => {
+    const username = req.body.username;
+    const password = req.body.password;
 
     if (!username || !password) {
         res.status(404).json({message: "Error logging in"})
@@ -41,12 +42,12 @@ regd_users.post("/login", (req,res) => {
     if (authenticatedUser(username,password)) {
         let accessToken = jwt.sign({
             data: password
-        }, 'access', {expiresIn: 60 * 60 * 5});
+        }, 'access', {expiresIn: 60 * 60});
 
         req.session.authorization = {
             accessToken, username
         }
-        return status(200).send("User succesfully logged in.");
+        return res.status(200).send("User succesfully logged in.");
     }
     else {
         return res.status(300).json({message: "Invalid login. check username and password"});
@@ -55,8 +56,20 @@ regd_users.post("/login", (req,res) => {
 
 // Add a book review
 regd_users.put("/auth/review/:isbn", (req, res) => {
-  //Write your code here
-  return res.status(300).json({message: "Yet to be implemented"});
+    const isbn = req.params.isbn;
+    const review = req.params.review;
+    if (authenticatedUser(username, password)) {
+        if (!isbn || review) {
+            return res.status(300).json({message: "Error to add the review, please add an isbn and review!"});
+        }
+        else {
+            books[isbn].reviews.push(username + review);
+            return res.status(200).send({message: "The review added by the user" + username + "was succesfully added under the book isbn:" + isbn});
+        }
+    }
+    else {
+        return res.status(404).json({message: "User is not logged in!"});
+    };
 });
 
 module.exports.authenticated = regd_users;
