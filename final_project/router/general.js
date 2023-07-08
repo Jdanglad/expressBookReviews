@@ -14,7 +14,7 @@ public_users.post("/register", (req,res) => {
             users.push({"username":username, "password":password});
             return res.status(200).json({message: "User succesfully registered, Now you can login"});
         }
-        if (username.length < 0 || password.length < 0) {
+        if (!username || !password) {
             return res.status(404).json({message: "Username &/or password was not provided."})
         }
         else {
@@ -39,8 +39,10 @@ public_users.get('/isbn/:isbn',function (req, res) {
 public_users.get('/author/:author',function (req, res) {  // needs to display the isbn as well
     const author = req.params.author;
     const booksIsbn = Object.values(books);
-    const booksByAuthor = {Author: booksIsbn.filter((isbn) => isbn.author === author)}
-    return res.status(300).json(booksByAuthor);
+    let filtered_books = []
+    const booksByAuthor = booksIsbn.filter((isbn) => isbn.author === author)   //Still in revision
+    filtered_books.push({author, booksByAuthor})
+    return res.status(300).json(filtered_books);
 });
 
 // Get all books based on title
