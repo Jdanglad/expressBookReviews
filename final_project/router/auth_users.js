@@ -4,6 +4,7 @@ let books = require("./booksdb.js");
 const regd_users = express.Router();
 
 let users = [];
+let currentUser;
  
 const isValid = (username)=>{                     //returns boolean
     let userInUse = users.filter((user) => {
@@ -23,6 +24,7 @@ const authenticatedUser = (username,password) => { //returns boolean
     });
 
     if (validusers.length > 0) {
+        currentUser = username;
         return true;
     }
     else {
@@ -42,7 +44,7 @@ regd_users.post("/login", (req, res) => {
     if (authenticatedUser(username,password)) {
         let accessToken = jwt.sign({
             data: password
-        }, 'access', {expiresIn: 60 * 60});
+        }, 'access', {expiresIn: 60 * 60 * 5});
 
         req.session.authorization = {
             accessToken, username
@@ -57,19 +59,16 @@ regd_users.post("/login", (req, res) => {
 // Add a book review
 regd_users.put("/auth/review/:isbn", (req, res) => {
     const isbn = req.params.isbn;
-    const review = req.params.review;
-    if (authenticatedUser(username, password)) {
-        if (!isbn || review) {
-            return res.status(300).json({message: "Error to add the review, please add an isbn and review!"});
-        }
-        else {
-            books[isbn].reviews.push(username + review);
-            return res.status(200).send({message: "The review added by the user" + username + "was succesfully added under the book isbn:" + isbn});
-        }
+    const review = req.body.review;
+    const reviewObj = books[isbn].reviews;
+
+    if (books[isbn].isbn === isbn) {                //need need test for, updating own, 2nd user posting review
+        reviewObj[currentUser] = review;
+        return res.status(200).send({message: "The user " + currentUser + " succesfully added a review under the book isbn:" + isbn});
     }
     else {
-        return res.status(404).json({message: "User is not logged in!"});
-    };
+        return res.status(300).json({message: "Error to add the review, please add an isbn and review!"});
+    }
 });
 
 module.exports.authenticated = regd_users;
