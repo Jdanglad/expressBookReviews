@@ -64,12 +64,30 @@ regd_users.put("/auth/review/:isbn", (req, res) => {
 
     if (books[isbn].isbn === isbn) {                //need need test for, updating own, 2nd user posting review
         reviewObj[currentUser] = review;
-        return res.status(200).send({message: "The user " + currentUser + " succesfully added a review under the book isbn:" + isbn});
+        return res.status(200).send({message: "The user " + currentUser + " succesfully added a review under the book ISBN:" + isbn});
     }
     else {
-        return res.status(300).json({message: "Error to add the review, please add an isbn and review!"});
+        return res.status(300).json({message: "Error to add the review!"});
     }
 });
+
+//delete books review
+regd_users.delete("/auth/review/:isbn", (req, res) => {
+    const isbn = req.params.isbn;
+    const reviewObj = books[isbn].reviews;
+    if (!reviewObj[currentUser]) {
+        res.status(300).json({message: "You don't have a review under the book ISBN: " + isbn});
+    }
+    if (isbn) {
+        if (isbn) [
+            delete reviewObj[currentUser]
+        ]
+        res.status(200).json({message: "Review by the user: " + currentUser + " under the ISBN: " + isbn + " was succesfully deleted!"})
+    } 
+    else {
+        res.status(300).json({message: "Something went wrong trying to delete your review."})
+    }
+})
 
 module.exports.authenticated = regd_users;
 module.exports.isValid = isValid;
